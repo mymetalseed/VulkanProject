@@ -1,7 +1,7 @@
-prefix=D:/Study/VulkanProject/Vulkan/thirdParty/GLFW3
+prefix=E:/Self/VulkanProject/Vulkan/thirdParty/GLFW3
 exec_prefix=${prefix}
-includedir=D:/Study/VulkanProject/Vulkan/thirdParty/GLFW3/include
-libdir=D:/Study/VulkanProject/Vulkan/thirdParty/GLFW3/lib
+includedir=E:/Self/VulkanProject/Vulkan/thirdParty/GLFW3/include
+libdir=E:/Self/VulkanProject/Vulkan/thirdParty/GLFW3/lib
 
 Name: GLFW
 Description: A multi-platform library for OpenGL, window and input
