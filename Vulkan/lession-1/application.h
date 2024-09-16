@@ -1,6 +1,10 @@
 #pragma once
 
 #include "base.h"
+#include "vulkanWrapper/instance.h"
+#include "vulkanWrapper/device.h"
+#include "vulkanWrapper/window.h"
+#include "vulkanWrapper/windowSurface.h"
 
 namespace FF {
 	const int WIDTH = 800;
@@ -19,6 +23,9 @@ namespace FF {
 		void cleanUp();
 
 	private:
-		GLFWwindow* mWindow{ NULL };
+		Wrapper::Instance::Ptr mInstance{ nullptr };
+		Wrapper::Device::Ptr mDevice{ nullptr };
+		Wrapper::Window::Ptr mWindow{ nullptr };
+		Wrapper::WindowSurface::Ptr mSurface{ nullptr };
 	};
 }
