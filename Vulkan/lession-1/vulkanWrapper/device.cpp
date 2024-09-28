@@ -132,7 +132,8 @@ namespace FF::Wrapper {
 		deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();
 		deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 		deviceCreateInfo.pEnabledFeatures = &devicesFeatures;
-		deviceCreateInfo.enabledExtensionCount = 0;
+		deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(deviceRequiredExtensions.size());
+		deviceCreateInfo.ppEnabledExtensionNames = deviceRequiredExtensions.data();
 
 		//layer²ã
 		if (mInstance->getEnableValidationLayer()) {

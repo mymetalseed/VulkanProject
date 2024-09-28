@@ -5,6 +5,7 @@
 #include "vulkanWrapper/device.h"
 #include "vulkanWrapper/window.h"
 #include "vulkanWrapper/windowSurface.h"
+#include "vulkanWrapper/swapChain.h"
 
 namespace FF {
 	const int WIDTH = 800;
@@ -27,5 +28,6 @@ namespace FF {
 		Wrapper::Device::Ptr mDevice{ nullptr };
 		Wrapper::Window::Ptr mWindow{ nullptr };
 		Wrapper::WindowSurface::Ptr mSurface{ nullptr };
+		Wrapper::SwapChain::Ptr mSwapChain{ nullptr };
 	};
 }

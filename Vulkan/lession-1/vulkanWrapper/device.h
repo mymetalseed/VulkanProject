@@ -4,6 +4,10 @@
 #include "windowSurface.h"
 
 namespace FF::Wrapper {
+
+	const std::vector<const char*> deviceRequiredExtensions = {
+		VK_KHR_SWAPCHAIN_EXTENSION_NAME
+	};
 	class Device {
 	public:
 		using Ptr = std::shared_ptr<Device>;
@@ -20,6 +24,9 @@ namespace FF::Wrapper {
 
 		void createLogicalDevice();
 		bool isQueueFamilyComplete();
+
+		[[nodiscard]] auto getDevice() const { return mDevice; }
+		[[nodiscard]] auto getPhysicalDevice() const { return mPhysicalDevice; }
 	private:
 		VkPhysicalDevice mPhysicalDevice{ VK_NULL_HANDLE };
 		Instance::Ptr mInstance;

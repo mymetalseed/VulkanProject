@@ -18,6 +18,7 @@ namespace FF {
 		mSurface = Wrapper::WindowSurface::create(mInstance,mWindow);
 
 		mDevice = Wrapper::Device::create(mInstance,mSurface);
+		mSwapChain = Wrapper::SwapChain::create(mDevice,mWindow,mSurface);
 	}
 
 	void Application::mainLoop() {
@@ -28,6 +29,7 @@ namespace FF {
 
 	void Application::cleanUp() {
 		//使mInstance的智能指针置为0，保证可以析构掉
+		mSwapChain.reset();
 		mDevice.reset();
 		mSurface.reset();
 		mInstance.reset();
