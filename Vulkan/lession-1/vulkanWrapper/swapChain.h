@@ -36,10 +36,15 @@ namespace FF::Wrapper {
 		//实际创建swapchain之后的运行时参数
 		VkFormat mSwapChainFormat;
 		VkExtent2D mSwapChainExtent;
+
+		uint32_t mImageCount{ 0 };
+
 		//VkImage由SwapChain创建，销毁也要交给SwapChain
 		std::vector<VkImage> mSwapChainImages{};
 		//对图像的管理器。
-		std::vector<VkImageView> mSwapChainViews{};
+		std::vector<VkImageView> mSwapChainImageViews{};
 
+	private:
+		VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags,uint32_t mipLevels=1);
 	};
 }

@@ -18,18 +18,18 @@ namespace FF::Wrapper {
 		VkExtent2D extent = chooseExtent(swapChainSupportInfo.mCapabilities);
 
 		//设置图像缓冲数量
-		uint32_t imageCount = swapChainSupportInfo.mCapabilities.minImageCount + 1;
+		mImageCount = swapChainSupportInfo.mCapabilities.minImageCount + 1;
 
 		//如果maxImageCount = 0，说明只要内存不爆炸，我们就可以设置任意数量的images
-		if (swapChainSupportInfo.mCapabilities.maxImageCount > 0 && imageCount > swapChainSupportInfo.mCapabilities.maxImageCount) {
-			imageCount = swapChainSupportInfo.mCapabilities.maxImageCount;
+		if (swapChainSupportInfo.mCapabilities.maxImageCount > 0 && mImageCount > swapChainSupportInfo.mCapabilities.maxImageCount) {
+			mImageCount = swapChainSupportInfo.mCapabilities.maxImageCount;
 		}
 
 		//填写创建信息,初始化必须置空，因为会有忘记设置的变量，值为随机
 		VkSwapchainCreateInfoKHR createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 		createInfo.surface = mSurface->getSurface();
-		createInfo.minImageCount = imageCount;//我现在设置的数量，是适合当前情况,但是可能得到更多
+		createInfo.minImageCount = mImageCount;//我现在设置的数量，是适合当前情况,但是可能得到更多
 		createInfo.imageFormat = surfaceFormat.format;
 		createInfo.imageColorSpace = surfaceFormat.colorSpace;
 		createInfo.imageExtent = extent;
@@ -68,9 +68,24 @@ namespace FF::Wrapper {
 
 		mSwapChainFormat = surfaceFormat.format;
 		mSwapChainExtent = extent;
+
+		//系统可能创建更多的Image,当前的imageCount是最小数量
+		vkGetSwapchainImagesKHR(mDevice->getDevice(), mSwapChain, &mImageCount, nullptr);
+		mSwapChainImages.resize(mImageCount);
+		vkGetSwapchainImagesKHR(mDevice->getDevice(), mSwapChain, &mImageCount, mSwapChainImages.data());
+
+		//创建imageView
+		mSwapChainImageViews.resize(mImageCount);
+		for (int i = 0; i < mImageCount; ++i) {
+			mSwapChainImageViews[i] = createImageView(mSwapChainImages[i], mSwapChainFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
+		}
+
 	}
 
 	SwapChain::~SwapChain() {
+		for (auto& imageView:mSwapChainImageViews) {
+			vkDestroyImageView(mDevice->getDevice(), imageView, nullptr);
+		}
 		if (mSwapChain != VK_NULL_HANDLE) {
 			vkDestroySwapchainKHR(mDevice->getDevice(), mSwapChain, nullptr);
 		}
@@ -161,6 +176,27 @@ namespace FF::Wrapper {
 			std::min(capabilities.maxImageExtent.width, actualExtent.width));
 
 
+	}
+
+	VkImageView SwapChain::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels) {
+		VkImageViewCreateInfo viewInfo = {};
+		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+		viewInfo.image = image;
+		viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+		viewInfo.format = format;
+
+		viewInfo.subresourceRange.aspectMask = aspectFlags;
+		viewInfo.subresourceRange.baseMipLevel = 0;
+		viewInfo.subresourceRange.levelCount = mipLevels;
+		viewInfo.subresourceRange.baseArrayLayer = 0;
+		viewInfo.subresourceRange.layerCount = 1;
+
+		VkImageView imageView{ VK_NULL_HANDLE };
+		if (vkCreateImageView(mDevice->getDevice(), &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
+			throw std::runtime_error("Error: failed to create image view in swapchain");
+		}
+
+		return imageView;
 	}
 
 }
