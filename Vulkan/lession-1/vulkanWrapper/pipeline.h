@@ -3,7 +3,7 @@
 #include "../base.h"
 #include "device.h"
 #include "shader.h"
-#include "renderPath.h"
+#include "renderPass.h"
 
 namespace FF::Wrapper {
 	class Pipeline {
@@ -37,8 +37,10 @@ namespace FF::Wrapper {
 		VkPipelineDepthStencilStateCreateInfo mDepthStencilState{};
 		VkPipelineLayoutCreateInfo mLayoutState{};
 
-		//TODO: need render pass and subpass index
-
+	public:
+		[[nodiscard]] auto getPipeline() const {
+			return mPipeline;
+		}
 
 	private:
 		VkPipeline mPipeline{ VK_NULL_HANDLE };

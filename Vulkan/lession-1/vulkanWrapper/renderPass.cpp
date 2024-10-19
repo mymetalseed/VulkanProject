@@ -1,4 +1,4 @@
-#include "renderPath.h"
+#include "renderPass.h"
 
 namespace FF::Wrapper {
 	SubPass::SubPass() {
@@ -33,7 +33,7 @@ namespace FF::Wrapper {
 
 
 		mSubPassDescription.inputAttachmentCount = static_cast<uint32_t>(mInputAttachmentReferences.size());
-		mSubPassDescription.pColorAttachments = mInputAttachmentReferences.data();
+		mSubPassDescription.pInputAttachments = mInputAttachmentReferences.data();
 
 		mSubPassDescription.pDepthStencilAttachment = 
 			mDepthStencilAttachmentReference.layout == VK_IMAGE_LAYOUT_UNDEFINED?nullptr:&mDepthStencilAttachmentReference;

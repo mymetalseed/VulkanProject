@@ -3,7 +3,7 @@
 #include "device.h"
 #include "window.h"
 #include "windowSurface.h"
-#include "renderPath.h"
+#include "renderPass.h"
 
 namespace FF::Wrapper {
 	struct SwapChainSupportInfo {
@@ -31,8 +31,24 @@ namespace FF::Wrapper {
 
 		void createFrameBuffers(const RenderPass::Ptr& renderPass);
 
+		[[nodiscard]] auto getImageCount() const {
+			return mImageCount;
+		}
+
+		[[nodiscard]] auto getSwapChain() const {
+			return mSwapChain;
+		}
+
 		[[nodiscard]] auto getFormat() const {
 			return mSwapChainFormat;
+		}
+
+		[[nodiscard]] auto getFrameBuffer(const int index) const {
+			return mSwapChainFrameBuffers[index];
+		}
+
+		[[nodiscard]] auto getExtent() const {
+			return mSwapChainExtent;
 		}
 	private:
 		VkSwapchainKHR mSwapChain{ VK_NULL_HANDLE };

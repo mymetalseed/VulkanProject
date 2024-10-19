@@ -74,7 +74,7 @@ namespace FF::Wrapper {
 		pipelineCreateInfo.pDepthStencilState = nullptr;//Add depthStencil
 		pipelineCreateInfo.pColorBlendState = &mBlendState;
 		pipelineCreateInfo.layout = mLayout;
-		pipelineCreateInfo.renderPass = mRenderPass->getRenderPath(); // todo: Add renderpass 
+		pipelineCreateInfo.renderPass = mRenderPass->getRenderPass(); // todo: Add renderpass 
 		pipelineCreateInfo.subpass = 0;
 
 		//已存在的pipeline为基础进行创建，会更快，但是需要指定falgs为
@@ -85,11 +85,9 @@ namespace FF::Wrapper {
 			vkDestroyPipeline(mDevice->getDevice(), mPipeline, nullptr);
 		}
 
-		/*
 		//pipeline cache 可以将相关数据存入缓存，在多个pipeline当中使用，也可以存到文件，不同程序调用
 		if (vkCreateGraphicsPipelines(mDevice->getDevice(), VK_NULL_HANDLE,1, &pipelineCreateInfo, nullptr, &mPipeline) != VK_SUCCESS) {
 			throw std::runtime_error("Error: failed to create pipeline");
 		}
-		*/
 	}
 }
