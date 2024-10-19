@@ -5,6 +5,7 @@
 #include <set>
 #include<string>
 #include<vector>
+#include<array>
 #include <optional>
 #include <fstream>
 

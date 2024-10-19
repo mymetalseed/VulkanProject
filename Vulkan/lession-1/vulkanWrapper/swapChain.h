@@ -3,6 +3,7 @@
 #include "device.h"
 #include "window.h"
 #include "windowSurface.h"
+#include "renderPath.h"
 
 namespace FF::Wrapper {
 	struct SwapChainSupportInfo {
@@ -27,6 +28,12 @@ namespace FF::Wrapper {
 	
 		VkPresentModeKHR chooseSurfacePresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
 		VkExtent2D chooseExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+
+		void createFrameBuffers(const RenderPass::Ptr& renderPass);
+
+		[[nodiscard]] auto getFormat() const {
+			return mSwapChainFormat;
+		}
 	private:
 		VkSwapchainKHR mSwapChain{ VK_NULL_HANDLE };
 		Device::Ptr mDevice{ nullptr };
@@ -43,6 +50,8 @@ namespace FF::Wrapper {
 		std::vector<VkImage> mSwapChainImages{};
 		//对图像的管理器。
 		std::vector<VkImageView> mSwapChainImageViews{};
+
+		std::vector<VkFramebuffer> mSwapChainFrameBuffers{};
 
 	private:
 		VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags,uint32_t mipLevels=1);

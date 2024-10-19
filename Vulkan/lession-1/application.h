@@ -8,6 +8,8 @@
 #include "vulkanWrapper/swapChain.h"
 #include "vulkanWrapper/shader.h"
 #include "vulkanWrapper/pipeline.h"
+#include "vulkanWrapper/renderPath.h"
+
 namespace FF {
 	const int WIDTH = 800;
 	const int HEIGHT = 600;
@@ -26,7 +28,7 @@ namespace FF {
 
 	private:
 		void createPipeline();
-
+		void createRenderPass();
 	private:
 		Wrapper::Instance::Ptr mInstance{ nullptr };
 		Wrapper::Device::Ptr mDevice{ nullptr };
@@ -34,5 +36,6 @@ namespace FF {
 		Wrapper::WindowSurface::Ptr mSurface{ nullptr };
 		Wrapper::SwapChain::Ptr mSwapChain{ nullptr };
 		Wrapper::Pipeline::Ptr mPipeline{ nullptr };
+		Wrapper::RenderPass::Ptr mRenderPass{ nullptr };
 	};
 }

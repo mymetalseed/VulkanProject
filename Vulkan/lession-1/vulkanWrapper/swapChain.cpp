@@ -79,12 +79,41 @@ namespace FF::Wrapper {
 		for (int i = 0; i < mImageCount; ++i) {
 			mSwapChainImageViews[i] = createImageView(mSwapChainImages[i], mSwapChainFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
 		}
+		
+		
 
 	}
+	void SwapChain::createFrameBuffers(const RenderPass::Ptr& renderPass){
+		//创建FrameBuffer
+		mSwapChainFrameBuffers.resize(mImageCount);
+		for (int i = 0; i < mImageCount; ++i) {
+			//FrameBuffer里面为一帧的数据，比如有n个ColorAttachment, 1个DepthStencilAttachment
+			//这些东西的集合为一个FrameBuffer，送入管线，就会形成一个GPU的结合，由输送的attachments构成
+			std::array<VkImageView, 1> attachments = { mSwapChainImageViews[i] };
+
+			VkFramebufferCreateInfo frameBufferCreateInfo{};
+			frameBufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+			frameBufferCreateInfo.renderPass = renderPass->getRenderPass();
+			frameBufferCreateInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+			frameBufferCreateInfo.pAttachments = attachments.data();
+			frameBufferCreateInfo.width = mSwapChainExtent.width;
+			frameBufferCreateInfo.height = mSwapChainExtent.height;
+			frameBufferCreateInfo.layers = 1;
+
+			if (vkCreateFramebuffer(mDevice->getDevice(), &frameBufferCreateInfo, nullptr, &mSwapChainFrameBuffers[i])!=VK_SUCCESS) {
+				throw std::runtime_error("Error: failed to create frameBuffer");
+			}
+		}
+
+	}
+
 
 	SwapChain::~SwapChain() {
 		for (auto& imageView:mSwapChainImageViews) {
 			vkDestroyImageView(mDevice->getDevice(), imageView, nullptr);
+		}
+		for (auto& frameBuffer : mSwapChainFrameBuffers) {
+			vkDestroyFramebuffer(mDevice->getDevice(), frameBuffer, nullptr);
 		}
 		if (mSwapChain != VK_NULL_HANDLE) {
 			vkDestroySwapchainKHR(mDevice->getDevice(), mSwapChain, nullptr);
