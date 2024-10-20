@@ -17,6 +17,10 @@ namespace FF::Wrapper {
 	}
 	CommandBuffer::~CommandBuffer() {
 		//会随着CommandPool的析构而释放
+		if (mCommandBuffer != VK_NULL_HANDLE) {
+			//只会干掉自己
+			vkFreeCommandBuffers(mDevice->getDevice(), mCommandPool->getCommandPool(), 1, &mCommandBuffer);
+		}
 	}
 
 

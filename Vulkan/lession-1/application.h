@@ -18,8 +18,6 @@
 #include "model.h"
 
 namespace FF {
-	const int WIDTH = 800;
-	const int HEIGHT = 600;
 
 	class Application {
 	public:
@@ -37,6 +35,17 @@ namespace FF {
 	private:
 		void createPipeline();
 		void createRenderPass();
+		void createCommandBuffers();
+		void createSyncObject();
+		
+		//重建交换链: 当窗口大小发生变化时，交换链也要发生变化,Frame View Pipeline RenderPass Sync(frameCount变化的话)都会发生变化
+		void recreateSwapChain();
+		void cleanupSwapChain();
+
+	private:
+		unsigned int mWidth = 800;
+		unsigned int mHeight = 600;
+
 	private:
 		int mCurrentFrame{ 0 };
 		Wrapper::Instance::Ptr mInstance{ nullptr };
