@@ -25,6 +25,9 @@ namespace FF {
 
 		mSwapChain->createFrameBuffers(mRenderPass);
 
+		//创建模型
+		mModel = Model::create(mDevice);
+
 		mPipeline = Wrapper::Pipeline::create(mDevice,mRenderPass);
 		createPipeline();
 
@@ -52,7 +55,11 @@ namespace FF {
 
 			mCommandBuffers[i]->bindGraphicPipeline(mPipeline->getPipeline());
 
-			mCommandBuffers[i]->draw(3);
+			mCommandBuffers[i]->bindVertexBuffer({ mModel->getVertexBuffer()->getBuffer() });
+
+			mCommandBuffers[i]->bindIndexBuffer(mModel->getIndexBuffer()->getBuffer());
+
+			mCommandBuffers[i]->drawIndex(mModel->getIndexCount());
 
 			mCommandBuffers[i]->endRenderPass();
 
@@ -69,6 +76,7 @@ namespace FF {
 			auto fence = Wrapper::Fence::create(mDevice);
 			mFences.push_back(fence);
 		}
+
 	}
 
 	void Application::createPipeline() {
@@ -97,10 +105,12 @@ namespace FF {
 
 		mPipeline->setShaderGroup(shaderGroup);
 		//顶点的排布模式
-		mPipeline->mVertexInputState.vertexBindingDescriptionCount = 0;
-		mPipeline->mVertexInputState.pVertexBindingDescriptions = nullptr;
-		mPipeline->mVertexInputState.vertexAttributeDescriptionCount = 0;
-		mPipeline->mVertexInputState.pVertexAttributeDescriptions = nullptr;
+		auto vertexBindingDes = mModel->getVertexInputBindingDescription();
+		auto attributeDes = mModel->getAttributeDescriptions();
+		mPipeline->mVertexInputState.vertexBindingDescriptionCount = vertexBindingDes.size();
+		mPipeline->mVertexInputState.pVertexBindingDescriptions = vertexBindingDes.data();
+		mPipeline->mVertexInputState.vertexAttributeDescriptionCount = attributeDes.size();
+		mPipeline->mVertexInputState.pVertexAttributeDescriptions = attributeDes.data();
 
 		//图元装配
 		mPipeline->mAssemblyState.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;

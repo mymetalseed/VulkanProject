@@ -13,6 +13,9 @@
 #include "vulkanWrapper/CommandBuffer.h"
 #include "vulkanWrapper/semaphor.h"
 #include "vulkanWrapper/fence.h"
+#include "vulkanWrapper/buffer.h"
+
+#include "model.h"
 
 namespace FF {
 	const int WIDTH = 800;
@@ -48,5 +51,7 @@ namespace FF {
 		std::vector<Wrapper::Semaphore::Ptr> mImageAvailableSemaphores{};
 		std::vector<Wrapper::Semaphore::Ptr> mRenderFinishedSemaphores{};
 		std::vector<Wrapper::Fence::Ptr> mFences{};
+
+		Model::Ptr mModel{ nullptr };
 	};
 }

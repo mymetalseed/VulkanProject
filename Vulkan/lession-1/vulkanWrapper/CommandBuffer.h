@@ -41,11 +41,21 @@ namespace FF::Wrapper {
 	
 		void bindGraphicPipeline(const VkPipeline& pipeline);
 
+		void bindVertexBuffer(const std::vector<VkBuffer> &buffers);
+
+		void bindIndexBuffer(const VkBuffer& buffer);
+
 		void draw(size_t vertexCount);
+		void drawIndex(size_t indexCount);
 	
 		void endRenderPass();
 
 		void end();
+
+		void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, uint32_t copyInfoCount,const std::vector<VkBufferCopy> &copyInfos);
+
+		//同步等待命令完毕
+		void submitSync(VkQueue queue,VkFence fence);
 
 		[[nodiscard]] auto getCommandBuffer() const { return mCommandBuffer; }
 
