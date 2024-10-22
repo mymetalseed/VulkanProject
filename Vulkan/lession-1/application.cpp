@@ -30,6 +30,10 @@ namespace FF {
 		//创建模型
 		mModel = Model::create(mDevice);
 
+		//descriptor
+		mUniformManager = UniformManager::create();
+		mUniformManager->init(mDevice,mSwapChain->getImageCount());
+
 		mPipeline = Wrapper::Pipeline::create(mDevice,mRenderPass);
 		createPipeline();
 
@@ -129,8 +133,9 @@ namespace FF {
 		mPipeline->mBlendState.blendConstants[3] = 0.0f;
 
 		//uniform的传递
-		mPipeline->mLayoutState.setLayoutCount = 0;
-		mPipeline->mLayoutState.pSetLayouts = nullptr;
+		mPipeline->mLayoutState.setLayoutCount = 1;
+		auto layout = mUniformManager->getDescriptorLayout()->getLayout();
+		mPipeline->mLayoutState.pSetLayouts = &layout;
 		mPipeline->mLayoutState.pushConstantRangeCount = 0;
 		mPipeline->mLayoutState.pPushConstantRanges = nullptr;
 
@@ -180,6 +185,10 @@ namespace FF {
 	void Application::mainLoop() {
 		while (!mWindow->shouldClose()) {
 			mWindow->pollEvents();
+
+			mModel->update();
+
+			mUniformManager->update(mVPMatrices,mModel->getUniform(),mCurrentFrame);
 
 			Render();
 		}
@@ -287,6 +296,8 @@ namespace FF {
 
 			mCommandBuffers[i]->bindGraphicPipeline(mPipeline->getPipeline());
 
+			mCommandBuffers[i]->bindDescriptorSet(mPipeline->getLayout(),mUniformManager->getDescriptorSet(mCurrentFrame));
+
 			mCommandBuffers[i]->bindVertexBuffer({ mModel->getVertexBuffer()->getBuffer() });
 
 			mCommandBuffers[i]->bindIndexBuffer(mModel->getIndexBuffer()->getBuffer());
@@ -334,7 +345,7 @@ namespace FF {
 		createRenderPass();
 
 		mSwapChain->createFrameBuffers(mRenderPass);
-		
+
 		mPipeline = Wrapper::Pipeline::create(mDevice, mRenderPass);
 		createPipeline();
 

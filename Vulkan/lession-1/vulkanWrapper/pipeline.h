@@ -41,7 +41,9 @@ namespace FF::Wrapper {
 		[[nodiscard]] auto getPipeline() const {
 			return mPipeline;
 		}
-
+		[[nodiscard]] auto getLayout() const {
+			return mLayout;
+		}
 	private:
 		VkPipeline mPipeline{ VK_NULL_HANDLE };
 		VkPipelineLayout mLayout{ VK_NULL_HANDLE };

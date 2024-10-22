@@ -64,7 +64,19 @@ namespace FF {
 		[[nodiscard]] auto getVertexBuffer() const { return mVertexBuffer; }
 		[[nodiscard]] auto getIndexBuffer() const { return mIndexBuffer; }
 		[[nodiscard]] auto getIndexCount() const { return mIndexDatas.size(); }
+		[[nodiscard]] auto getUniform() const { return mUniform; }
 
+		void setModelMatrix(glm::mat4 matrix) {
+			mUniform.mModelMatrix = matrix;
+		}
+
+		void update() {
+			glm::mat4 rotateMatrix = glm::mat4(1.0f);
+			rotateMatrix = glm::rotate(rotateMatrix, glm::radians(mAngle), glm::vec3(0.0f, 0.0f, 1.0f));
+			mUniform.mModelMatrix = rotateMatrix;
+
+			mAngle += 0.01f;
+		}
 
 	private:
 		std::vector<Vertex> mDatas{};
@@ -72,5 +84,9 @@ namespace FF {
 
 		Wrapper::Buffer::Ptr mVertexBuffer{ nullptr };
 		Wrapper::Buffer::Ptr mIndexBuffer{ nullptr };
+
+		ObjectUniform mUniform;
+
+		float mAngle{ 0.0f };
 	};
 }
