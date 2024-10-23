@@ -59,6 +59,8 @@ namespace FF::Wrapper {
 		//同步等待命令完毕
 		void submitSync(VkQueue queue,VkFence fence);
 
+		void transferImageLayout(const VkImageMemoryBarrier& imageMemoryBarrier,VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask);
+
 		[[nodiscard]] auto getCommandBuffer() const { return mCommandBuffer; }
 
 	private:

@@ -19,6 +19,7 @@
 #include "vulkanWrapper/description.h"
 #include "vulkanWrapper/descriptorSet.h"
 #include "uniformManager.h"
+#include "vulkanWrapper/image.h"
 
 #include "model.h"
 

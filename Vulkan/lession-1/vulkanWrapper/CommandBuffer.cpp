@@ -100,4 +100,17 @@ namespace FF::Wrapper {
 		vkQueueWaitIdle(queue);
 	}
 
+	void CommandBuffer::transferImageLayout(const VkImageMemoryBarrier &imageMemoryBarrier, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask) {
+		vkCmdPipelineBarrier(
+			mCommandBuffer, 
+			srcStageMask, 
+			dstStageMask,
+			0,
+			0,nullptr,//MemoryBarrier
+			0,nullptr,//BufferMemoryBarrier
+			1,&imageMemoryBarrier
+		);
+	}
+
+
 }
