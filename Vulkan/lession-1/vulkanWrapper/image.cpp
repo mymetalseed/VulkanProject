@@ -1,4 +1,6 @@
 #include "image.h"
+#include "CommandBuffer.h"
+#include "buffer.h"
 
 namespace FF::Wrapper {
 	Image::Image(
@@ -15,6 +17,8 @@ namespace FF::Wrapper {
 	) {
 		mDevice = device;
 		mLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		mWidth = width;
+		mHeight = height;
 
 		VkImageCreateInfo imageCreateInfo{};
 		imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -86,7 +90,8 @@ namespace FF::Wrapper {
 		VkImageLayout newLayout,
 		VkPipelineStageFlags srcStageMask,
 		VkPipelineStageFlags dstStageMask,
-		VkImageSubresourceRange subresourceRange
+		VkImageSubresourceRange subresourceRange,
+		const CommandPool::Ptr& commandPool
 	) {
 		VkImageMemoryBarrier imageMemoryBarrier{};
 		imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -123,8 +128,26 @@ namespace FF::Wrapper {
 			break;
 		}
 
+		mLayout = newLayout;
 
+		auto commandBuffer = CommandBuffer::create(mDevice, commandPool);
+		commandBuffer->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+		commandBuffer->transferImageLayout(imageMemoryBarrier, srcStageMask, dstStageMask);
+		commandBuffer->end();
+		commandBuffer->submitSync(mDevice->getGraphicQueue());
+	}
 
+	void Image::fillImagData(size_t size, void* pData, const CommandPool::Ptr& commandPool) {
+		assert(pData);
+		assert(size);
+
+		auto stageBuffer = Buffer::createStageBuffer(mDevice, size, pData);
+
+		auto commandBuffer = CommandBuffer::create(mDevice, commandPool);
+		commandBuffer->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+		commandBuffer->copyBufferToImage(stageBuffer->getBuffer(),mImage,mLayout, mWidth,mHeight);
+		commandBuffer->end();
+		commandBuffer->submitSync(mDevice->getGraphicQueue());
 	}
 
 	Image::~Image() {

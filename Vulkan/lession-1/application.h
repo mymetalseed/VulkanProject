@@ -20,6 +20,8 @@
 #include "vulkanWrapper/descriptorSet.h"
 #include "uniformManager.h"
 #include "vulkanWrapper/image.h"
+#include "vulkanWrapper/sampler.h"
+#include "Texture/texture.h"
 
 #include "model.h"
 
@@ -43,7 +45,7 @@ namespace FF {
 		void createRenderPass();
 		void createCommandBuffers();
 		void createSyncObject();
-		
+
 		//重建交换链: 当窗口大小发生变化时，交换链也要发生变化,Frame View Pipeline RenderPass Sync(frameCount变化的话)都会发生变化
 		void recreateSwapChain();
 		void cleanupSwapChain();

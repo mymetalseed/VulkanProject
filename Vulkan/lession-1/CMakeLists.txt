@@ -18,6 +18,7 @@ link_directories(
 )
 
 add_subdirectory(vulkanWrapper)
+add_subdirectory(Texture)
 
 add_executable(vulkanLearning ${DIRSRCS})
-target_link_libraries(vulkanLearning vulkanLib ${Vulkan_LIBRARY} glfw3.lib)
+target_link_libraries(vulkanLearning vulkanLib textureLib ${Vulkan_LIBRARY} glfw3.lib)

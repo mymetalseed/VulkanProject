@@ -39,7 +39,7 @@ namespace FF::Wrapper {
 				}
 				
 				if (param->mDescriptorType == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER){
-					//TODO
+					descriptorSetWrite.pImageInfo = &param->mTexture->getImageInfo();
 				}
 
 				descriptorSetWrites.push_back(descriptorSetWrite);

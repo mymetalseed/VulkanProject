@@ -74,7 +74,7 @@ namespace FF::Wrapper {
 
 
 		return deviceProp.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU &&
-			deviceFeatures.geometryShader;
+			deviceFeatures.geometryShader && deviceFeatures.samplerAnisotropy;
 	}
 
 	//初始化队列族
@@ -127,6 +127,9 @@ namespace FF::Wrapper {
 
 		//填写逻辑设备创建信息
 		VkPhysicalDeviceFeatures devicesFeatures = {};
+		devicesFeatures.samplerAnisotropy = VK_TRUE;
+
+
 		VkDeviceCreateInfo deviceCreateInfo = {};
 		deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 		deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();

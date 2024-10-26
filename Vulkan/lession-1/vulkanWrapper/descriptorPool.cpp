@@ -21,13 +21,17 @@ namespace FF::Wrapper{
 		//即uniformBuffer正在被读取，此时cpu端的下一个循环，却对其进行了数据的修改
 
 		int uniformBufferCount = 0;
-		//TODO: 纹理这个种类的uniform有多少个...
+		//纹理这个种类的uniform有多少个...
+		int textureCount = 0;
 
 		for (const auto& param : params) {
 			if (param->mDescriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
 				uniformBufferCount++;
 			}
-			//TODO
+	
+			if (param->mDescriptorType == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER) {
+				textureCount++;
+			}
 		}
 
 		//描述每一种uniform都有多少个
@@ -36,6 +40,12 @@ namespace FF::Wrapper{
 		uniformBufferSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		uniformBufferSize.descriptorCount = uniformBufferCount * frameCount;
 		poolSizes.push_back(uniformBufferSize);
+
+		VkDescriptorPoolSize textureSize{};
+		textureSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		//这个size是指有多少个descriptor
+		textureSize.descriptorCount = textureCount * frameCount;
+		poolSizes.push_back(textureSize);
 
 		VkDescriptorPoolCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;

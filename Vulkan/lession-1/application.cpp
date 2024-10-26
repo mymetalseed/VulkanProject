@@ -27,30 +27,33 @@ namespace FF {
 
 		mSwapChain->createFrameBuffers(mRenderPass);
 
-		//创建模型
-		mModel = Model::create(mDevice);
+		mCommandPool = Wrapper::CommandPool::create(mDevice);
 
 		//descriptor
 		mUniformManager = UniformManager::create();
-		mUniformManager->init(mDevice,mSwapChain->getImageCount());
+		mUniformManager->init(mDevice, mCommandPool, mSwapChain->getImageCount());
+
+		//创建模型
+		mModel = Model::create(mDevice);
 
 		mPipeline = Wrapper::Pipeline::create(mDevice,mRenderPass);
 		createPipeline();
-
-		mCommandPool = Wrapper::CommandPool::create(mDevice);
 
 		mCommandBuffers.resize(mSwapChain->getImageCount());
 
 		createCommandBuffers();
 		createSyncObject();
+
+
+		
 	}
 
 	void Application::createPipeline() {
 		VkViewport viewport = {};
 		viewport.x = 0.0f;
-		viewport.y = 0.0f;
+		viewport.y = (float)mHeight;
 		viewport.width = (float)mWidth;
-		viewport.height = (float)mHeight;
+		viewport.height = -(float)mHeight;
 		viewport.minDepth = 0.0f;
 		viewport.maxDepth = 1.0f;
 
@@ -64,9 +67,9 @@ namespace FF {
 
 		//设置shader
 		std::vector<Wrapper::Shader::Ptr> shaderGroup{};
-		auto shaderVertex = Wrapper::Shader::create(mDevice, "shaders/vs.spv", VK_SHADER_STAGE_VERTEX_BIT, "main");
+		auto shaderVertex = Wrapper::Shader::create(mDevice, "D:/Study/VulkanProject/Vulkan/lession-1/shaders/vs.spv", VK_SHADER_STAGE_VERTEX_BIT, "main");
 		shaderGroup.push_back(shaderVertex);
-		auto shaderFragment = Wrapper::Shader::create(mDevice, "shaders/fs.spv", VK_SHADER_STAGE_FRAGMENT_BIT, "main");
+		auto shaderFragment = Wrapper::Shader::create(mDevice, "D:/Study/VulkanProject/Vulkan/lession-1/shaders/fs.spv", VK_SHADER_STAGE_FRAGMENT_BIT, "main");
 		shaderGroup.push_back(shaderFragment);
 
 		mPipeline->setShaderGroup(shaderGroup);
@@ -88,7 +91,7 @@ namespace FF {
 		mPipeline->mRasterState.polygonMode = VK_POLYGON_MODE_FILL;
 		mPipeline->mRasterState.lineWidth = 1.0f;//大于1需要开启GUP特性
 		mPipeline->mRasterState.cullMode = VK_CULL_MODE_BACK_BIT;
-		mPipeline->mRasterState.frontFace = VK_FRONT_FACE_CLOCKWISE;
+		mPipeline->mRasterState.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 		mPipeline->mRasterState.depthBiasEnable = VK_FALSE;
 		mPipeline->mRasterState.depthBiasConstantFactor = 0.0f;
 		mPipeline->mRasterState.depthBiasClamp = 0.0f;
@@ -298,7 +301,9 @@ namespace FF {
 
 			mCommandBuffers[i]->bindDescriptorSet(mPipeline->getLayout(),mUniformManager->getDescriptorSet(mCurrentFrame));
 
-			mCommandBuffers[i]->bindVertexBuffer({ mModel->getVertexBuffer()->getBuffer() });
+			//mCommandBuffers[i]->bindVertexBuffer({ mModel->getVertexBuffer()->getBuffer() });
+
+			mCommandBuffers[i]->bindVertexBuffer(mModel->getVertexBuffers());
 
 			mCommandBuffers[i]->bindIndexBuffer(mModel->getIndexBuffer()->getBuffer());
 
@@ -324,6 +329,7 @@ namespace FF {
 			mFences.push_back(fence);
 		}
 	}
+
 
 	void Application::recreateSwapChain() {
 		int width = 0, height = 0;

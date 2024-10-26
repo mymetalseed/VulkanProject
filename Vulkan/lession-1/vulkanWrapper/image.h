@@ -2,6 +2,7 @@
 
 #include "../base.h"
 #include "device.h"
+#include "commandPool.h"
 
 namespace FF::Wrapper {
 
@@ -43,16 +44,28 @@ namespace FF::Wrapper {
 		);
 		~Image();
 
+		//此处属于便捷写法，封装性比较好，但是可以独立作为一个工具函数
+		//写到Tool的类里面
 		void setImageLayout(
 			VkImageLayout newLayout,
 			VkPipelineStageFlags srcStageMask,
 			VkPipelineStageFlags dstStageMask,
-			VkImageSubresourceRange subresourceRange
+			VkImageSubresourceRange subresourceRange,
+			const CommandPool::Ptr& commandPool
 		);
+
+		void fillImagData(size_t size,void* pData,const CommandPool::Ptr &commandPool);
+
+		[[nodiscard]] auto getImage() const { return mImage; }
+		[[nodiscard]] auto getLayout() const { return mLayout; }
+		[[nodiscard]] auto getImageView() const { return mImageView; }
+		[[nodiscard]] auto getWidth() const { return mWidth; }
+		[[nodiscard]] auto getHeight() const { return mHeight; }
 
 	private:
 		uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 	private:
+		size_t mWidth{ 0 }, mHeight{0};
 		Device::Ptr mDevice{ nullptr };
 		VkImage mImage{ VK_NULL_HANDLE };
 		VkDeviceMemory mImageMemory{ VK_NULL_HANDLE };
