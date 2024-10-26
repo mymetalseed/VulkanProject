@@ -19,6 +19,7 @@ namespace FF::Wrapper {
 		mLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		mWidth = width;
 		mHeight = height;
+		mFormat = format;
 
 		VkImageCreateInfo imageCreateInfo{};
 		imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -120,9 +121,22 @@ namespace FF::Wrapper {
 		case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
 			imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 			break;
-		case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+		case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL: {
 			//如果目标是将图片转换成为一个适合被作为纹理的格式，那么被阻塞的操作一定是，读取
+			//如果作为Texture，那么来源只能有两种,一种是map从CPU拷贝而来，
+			//一种是stageBuffer拷贝而来
+			if (imageMemoryBarrier.srcAccessMask == 0) {
+				imageMemoryBarrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
+			}
 			imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+		}
+			break;
+		case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+			imageMemoryBarrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+			break;
+		case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL: {
+			imageMemoryBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		}
 			break;
 		default:
 			break;
@@ -162,5 +176,97 @@ namespace FF::Wrapper {
 		if (mImage != VK_NULL_HANDLE) {
 			vkDestroyImage(mDevice->getDevice(), mImage, nullptr);
 		}
+	}
+
+
+
+	VkFormat Image::findSupportedFormat(
+		const Device::Ptr& device,
+		const std::vector<VkFormat>& candidates, 
+		VkImageTiling tiling, 
+		VkFormatFeatureFlags features
+	) {
+		for (auto format : candidates) {
+			VkFormatProperties props;
+			vkGetPhysicalDeviceFormatProperties(device->getPhysicalDevice(), format, &props);
+			if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
+				return format;
+			}
+
+			if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
+				return format;
+			}
+		}
+
+		throw std::runtime_error("Error: can not find proper format");
+	}
+
+	bool Image::hasStencilComponent(VkFormat format) {
+		return mFormat == VK_FORMAT_D32_SFLOAT_S8_UINT || mFormat == VK_FORMAT_D24_UNORM_S8_UINT;
+	}
+
+	//工具函数
+	Image::Ptr Image::createDepthImage(
+		const Device::Ptr& device,
+		const int& width,
+		const int& height,
+		VkSampleCountFlagBits samples
+	) {
+		//找到相关的格式
+		std::vector<VkFormat> formats = {
+			VK_FORMAT_D32_SFLOAT,
+			VK_FORMAT_D32_SFLOAT_S8_UINT,
+			VK_FORMAT_D24_UNORM_S8_UINT,
+		};
+
+		VkFormat resultFormat = findSupportedFormat(
+			device, 
+			formats, 
+			VK_IMAGE_TILING_OPTIMAL, 
+			VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
+		);
+
+		return Image::create(
+			device, width, height, resultFormat,
+			VK_IMAGE_TYPE_2D,
+			VK_IMAGE_TILING_OPTIMAL,
+			VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+			samples,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			VK_IMAGE_ASPECT_DEPTH_BIT
+			);
+	}
+
+	Image::Ptr Image::createRenderTargteImage(
+		const Device::Ptr& device,
+		const int& width,
+		const int& height,
+		VkFormat format
+	) {
+		return Image::create(
+			device, width, height, format,
+			VK_IMAGE_TYPE_2D,
+			VK_IMAGE_TILING_OPTIMAL,
+			VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+			device->getMaxUsableSampleCount(),
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			VK_IMAGE_ASPECT_COLOR_BIT
+		);
+	}
+
+	VkFormat Image::findDepthFormat(const Device::Ptr& device) {
+		//找到相关的格式
+		std::vector<VkFormat> formats = {
+			VK_FORMAT_D32_SFLOAT,
+			VK_FORMAT_D32_SFLOAT_S8_UINT,
+			VK_FORMAT_D24_UNORM_S8_UINT,
+		};
+
+		return findSupportedFormat(
+			device,
+			formats,
+			VK_IMAGE_TILING_OPTIMAL,
+			VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
+		);
 	}
 }

@@ -26,6 +26,8 @@ namespace FF::Wrapper {
 		void createLogicalDevice();
 		bool isQueueFamilyComplete();
 
+		VkSampleCountFlagBits getMaxUsableSampleCount();
+
 		[[nodiscard]] auto getDevice() const { return mDevice; }
 		[[nodiscard]] auto getPhysicalDevice() const { return mPhysicalDevice; }
 
@@ -33,6 +35,7 @@ namespace FF::Wrapper {
 		[[nodiscard]] auto getPresentQueue() const { return mPresentQueue; }
 		[[nodiscard]] auto getGraphicQueueFamily() const { return mGraphicQueueFamily; }
 		[[nodiscard]] auto getPresentQueueFamily() const { return mPresentQueueFamily; }
+		
 	private:
 		VkPhysicalDevice mPhysicalDevice{ VK_NULL_HANDLE };
 		Instance::Ptr mInstance;

@@ -30,9 +30,19 @@ namespace FF {
 				0.5f,0.0f,0.0f,
 				-0.5f,0.0f,0.0f,
 				0.0f,-0.5f,0.0f,
+
+				0.3f,0.5f,0.2f,
+				1.8f,0.0f,0.2f,
+				-0.8f,0.0f,0.2f,
+				0.3f,-0.5f,0.2f,
 			};
 
 			mColors = {
+				1.0f,0.0f,0.0f,
+				0.0f,1.0f,0.0f,
+				0.0f,0.0f,1.0f,
+				1.0f,0.0f,0.0f,
+
 				1.0f,0.0f,0.0f,
 				0.0f,1.0f,0.0f,
 				0.0f,0.0f,1.0f,
@@ -44,10 +54,16 @@ namespace FF {
 				0.0f,0.0f,
 				1.0f,1.0f,
 				1.0f,0.0f,
+
+				0.0f,1.0f,
+				0.0f,0.0f,
+				1.0f,1.0f,
+				1.0f,0.0f,
 			};
 
 			mIndexDatas = {
-				0,2,1,1,2,3
+				0,2,1,1,2,3,
+				4,6,5,5,6,7
 			};
 
 			mPositionBuffer = Wrapper::Buffer::createVertexBuffer(device, mPositions.size() * sizeof(float), mPositions.data());

@@ -118,6 +118,10 @@ namespace FF::Wrapper {
 	}
 
 	void CommandBuffer::transferImageLayout(const VkImageMemoryBarrier &imageMemoryBarrier, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask) {
+		if (imageMemoryBarrier.subresourceRange.aspectMask == 0) {
+			throw std::runtime_error("Error: aspectMask is zero");
+		}
+		
 		vkCmdPipelineBarrier(
 			mCommandBuffer, 
 			srcStageMask, 

@@ -15,6 +15,20 @@ namespace FF::Wrapper {
 	class Image {
 	public:
 		using Ptr = std::shared_ptr<Image>;
+
+		static Image::Ptr createDepthImage(
+			const Device::Ptr& device,
+			const int& width,
+			const int& height,
+			VkSampleCountFlagBits samples
+		);
+		static Image::Ptr createRenderTargteImage(
+			const Device::Ptr& device,
+			const int& width,
+			const int& height,
+			VkFormat format
+		);
+	public:
 		static Ptr create(
 			const Device::Ptr& device,
 			const int& width,
@@ -61,15 +75,26 @@ namespace FF::Wrapper {
 		[[nodiscard]] auto getImageView() const { return mImageView; }
 		[[nodiscard]] auto getWidth() const { return mWidth; }
 		[[nodiscard]] auto getHeight() const { return mHeight; }
+	public:
+		static VkFormat findDepthFormat(const Device::Ptr& device);
+		static VkFormat findSupportedFormat(
+			const Device::Ptr& device,
+			const std::vector<VkFormat>& candidates,
+			VkImageTiling tiling,
+			VkFormatFeatureFlags features
+		);
 
+		bool hasStencilComponent(VkFormat format);
 	private:
 		uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+
 	private:
 		size_t mWidth{ 0 }, mHeight{0};
 		Device::Ptr mDevice{ nullptr };
 		VkImage mImage{ VK_NULL_HANDLE };
 		VkDeviceMemory mImageMemory{ VK_NULL_HANDLE };
 		VkImageView mImageView{ VK_NULL_HANDLE };
+		VkFormat mFormat;
 
 		VkImageLayout mLayout{ VK_IMAGE_LAYOUT_UNDEFINED };
 	};

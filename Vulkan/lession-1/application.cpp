@@ -18,7 +18,10 @@ namespace FF {
 		mSurface = Wrapper::WindowSurface::create(mInstance,mWindow);
 
 		mDevice = Wrapper::Device::create(mInstance,mSurface);
-		mSwapChain = Wrapper::SwapChain::create(mDevice,mWindow,mSurface);
+
+		mCommandPool = Wrapper::CommandPool::create(mDevice);
+
+		mSwapChain = Wrapper::SwapChain::create(mDevice,mWindow,mSurface, mCommandPool);
 		mWidth = mSwapChain->getExtent().width;
 		mHeight = mSwapChain->getExtent().height;
 
@@ -27,7 +30,7 @@ namespace FF {
 
 		mSwapChain->createFrameBuffers(mRenderPass);
 
-		mCommandPool = Wrapper::CommandPool::create(mDevice);
+
 
 		//descriptor
 		mUniformManager = UniformManager::create();
@@ -99,13 +102,17 @@ namespace FF {
 
 		//TODO: 多重采样
 		mPipeline->mSampleState.sampleShadingEnable = VK_FALSE;
-		mPipeline->mSampleState.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+		mPipeline->mSampleState.rasterizationSamples = mDevice->getMaxUsableSampleCount();
 		mPipeline->mSampleState.minSampleShading = 1.0f;
 		mPipeline->mSampleState.pSampleMask = nullptr;
 		mPipeline->mSampleState.alphaToCoverageEnable = VK_FALSE;
 		mPipeline->mSampleState.alphaToOneEnable = VK_FALSE;
 
 		//TODO:深度与模板测试
+		mPipeline->mDepthStencilState.depthTestEnable = VK_TRUE;
+		mPipeline->mDepthStencilState.depthWriteEnable = VK_TRUE;
+		mPipeline->mDepthStencilState.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+
 
 		//颜色混合
 		//颜色混合掩码，通道与掩码进行AND
@@ -146,7 +153,12 @@ namespace FF {
 	}
 
 	void Application::createRenderPass() {
-		VkAttachmentDescription attachmentDes;
+		// 0: 最终输出图片
+		// 1: Resolve图片(MultiSample)
+		// 2: Dpeth图片
+
+		// 0号位: 最终输出
+		VkAttachmentDescription attachmentDes{};
 		attachmentDes.format = mSwapChain->getFormat();
 		attachmentDes.samples = VK_SAMPLE_COUNT_1_BIT;
 		attachmentDes.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -155,19 +167,55 @@ namespace FF {
 		attachmentDes.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		attachmentDes.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		attachmentDes.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-		//课上没有
-		attachmentDes.flags = VK_ATTACHMENT_DESCRIPTION_MAY_ALIAS_BIT;
 
 		mRenderPass->addAttachment(attachmentDes);
+
+		//采样图片
+		VkAttachmentDescription multiSampleAchmentDes{};
+		multiSampleAchmentDes.format = mSwapChain->getFormat();
+		multiSampleAchmentDes.samples = mDevice->getMaxUsableSampleCount();
+		multiSampleAchmentDes.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		multiSampleAchmentDes.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		multiSampleAchmentDes.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		multiSampleAchmentDes.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		multiSampleAchmentDes.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		multiSampleAchmentDes.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+		mRenderPass->addAttachment(multiSampleAchmentDes);
+
+		//深度缓存Attchment
+		VkAttachmentDescription depthattachmentDes{};
+		depthattachmentDes.format = Wrapper::Image::findDepthFormat(mDevice);
+		depthattachmentDes.samples = mDevice->getMaxUsableSampleCount();
+		depthattachmentDes.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		depthattachmentDes.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		depthattachmentDes.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		depthattachmentDes.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		depthattachmentDes.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		depthattachmentDes.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+		mRenderPass->addAttachment(depthattachmentDes);
 
 		//对于画布得索引设置以及格式要求
 		VkAttachmentReference attachmentRef{};
 		attachmentRef.attachment = 0;
 		attachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
+		//Multi
+		VkAttachmentReference multiSampleAttachmentRef{};
+		multiSampleAttachmentRef.attachment = 1;
+		multiSampleAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+		//对于画布得索引设置以及格式要求
+		VkAttachmentReference depthAttachmentRef{};
+		depthAttachmentRef.attachment = 2;
+		depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
 		//创建子流程
 		Wrapper::SubPass subPass{};
-		subPass.addColorAttachmentReference(attachmentRef);
+		subPass.addColorAttachmentReference(multiSampleAttachmentRef);
+		subPass.setDepthStencilAttachmentReference(depthAttachmentRef);
+		subPass.setResolveAttachmentReference(attachmentRef);
 		subPass.buildSubPassDescription();
 
 		mRenderPass->addSubPass(subPass);
@@ -291,9 +339,22 @@ namespace FF {
 			renderBeginInfo.renderArea.offset = { 0,0 };
 			renderBeginInfo.renderArea.extent = mSwapChain->getExtent();
 
-			VkClearValue clearColor = { 0.0f,0.0f,0.0f,1.0f };
-			renderBeginInfo.clearValueCount = 1;
-			renderBeginInfo.pClearValues = &clearColor;
+			std::vector<VkClearValue> clearColors{};
+
+			VkClearValue clearColor{};
+			clearColor .color = { 0.0f,0.0f,0.0f,1.0f };
+			clearColors.push_back(clearColor);
+
+			VkClearValue multiClearColor{};
+			multiClearColor.color = { 0.0f,0.0f,0.0f,1.0f };
+			clearColors.push_back(multiClearColor);
+
+			VkClearValue depthClearColor{};
+			depthClearColor.depthStencil = { 1.0f,0 };
+			clearColors.push_back(depthClearColor);
+
+			renderBeginInfo.clearValueCount = static_cast<uint32_t>(clearColors.size());
+			renderBeginInfo.pClearValues = clearColors.data();
 
 			mCommandBuffers[i]->beginRenderPass(renderBeginInfo);
 
@@ -343,7 +404,7 @@ namespace FF {
 		vkDeviceWaitIdle(mDevice->getDevice());
 		cleanupSwapChain();
 
-		mSwapChain = Wrapper::SwapChain::create(mDevice, mWindow, mSurface);
+		mSwapChain = Wrapper::SwapChain::create(mDevice, mWindow, mSurface, mCommandPool);
 		mWidth = mSwapChain->getExtent().width;
 		mHeight = mSwapChain->getExtent().height;
 

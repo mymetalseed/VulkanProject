@@ -4,6 +4,8 @@
 #include "window.h"
 #include "windowSurface.h"
 #include "renderPass.h"
+#include "image.h"
+#include "commandPool.h"
 
 namespace FF::Wrapper {
 	struct SwapChainSupportInfo {
@@ -17,10 +19,20 @@ namespace FF::Wrapper {
 	class SwapChain {
 	public:
 		using Ptr = std::shared_ptr<SwapChain>;
-		static Ptr create(const Device::Ptr& device, const Window::Ptr& window, const WindowSurface::Ptr& surface) {
-			return std::make_shared<SwapChain>(device, window, surface);
+		static Ptr create(
+			const Device::Ptr& device, 
+			const Window::Ptr& window, 
+			const WindowSurface::Ptr& surface,
+			const CommandPool::Ptr& commandPool
+		) {
+			return std::make_shared<SwapChain>(device, window, surface, commandPool);
 		}
-		SwapChain(const Device::Ptr &device,const Window::Ptr &window,const WindowSurface::Ptr &surface);
+		SwapChain(
+			const Device::Ptr &device,
+			const Window::Ptr &window,
+			const WindowSurface::Ptr &surface,
+			const CommandPool::Ptr& commandPool
+		);
 		~SwapChain();
 
 		SwapChainSupportInfo querySwapChainSupportInfo();
@@ -68,6 +80,11 @@ namespace FF::Wrapper {
 		std::vector<VkImageView> mSwapChainImageViews{};
 
 		std::vector<VkFramebuffer> mSwapChainFrameBuffers{};
+
+		//…Ó∂»Õº∆¨
+		std::vector<Image::Ptr> mDepthImages{};
+
+		std::vector<Image::Ptr> mMultiSampleImages{};
 
 	private:
 		VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags,uint32_t mipLevels=1);
