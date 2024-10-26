@@ -22,17 +22,23 @@
 #include "vulkanWrapper/image.h"
 #include "vulkanWrapper/sampler.h"
 #include "Texture/texture.h"
+#include "Camera.h"
 
 #include "model.h"
 
 namespace FF {
 
-	class Application {
+	class Application : public std::enable_shared_from_this<Application> {
 	public:
 		Application() = default;
 		~Application() = default;
 
 		void run();
+
+		void onMouseMove(double xpos,double ypos);
+
+		void onKeyDown(CAMERA_MOVE moveDirection);
+
 	private:
 		void initWindow();
 		void initVulkan();
@@ -73,6 +79,6 @@ namespace FF {
 
 		Model::Ptr mModel{ nullptr };
 		VPMatrices mVPMatrices;
-
+		Camera mCamera{};
 	};
 }

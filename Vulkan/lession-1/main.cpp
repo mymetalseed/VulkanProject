@@ -3,9 +3,9 @@
 
 
 int main() {
-	FF::Application app;
+	std::shared_ptr<FF::Application> app = std::make_shared<FF::Application>();
 	try{
-		app.run();
+		app->run();
 	}
 	catch (const std::exception& e) {
 		std::cout << e.what() << std::endl;

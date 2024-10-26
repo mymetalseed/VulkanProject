@@ -9,8 +9,23 @@ namespace FF {
 		cleanUp();
 	}
 
+	void Application::onMouseMove(double xpos, double ypos) {
+		mCamera.onMouseMove(xpos, ypos);
+	}
+
+	void Application::onKeyDown(CAMERA_MOVE moveDirection) {
+		mCamera.move(moveDirection);
+	}
+
 	void Application::initWindow() {
 		mWindow = Wrapper::Window::create(mWidth, mHeight);
+		mWindow->setApp(shared_from_this());
+
+		mCamera.lookAt(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		mCamera.update();
+
+		mCamera.setPerpective(45.0f, (float)mWidth / (float)mHeight, 0.1f, 100.0f);
+		mCamera.setSpeed(0.001f);
 	}
 
 	void Application::initVulkan() {
@@ -38,6 +53,7 @@ namespace FF {
 
 		//创建模型
 		mModel = Model::create(mDevice);
+		mModel->loadModel("D:/Study/VulkanProject/Vulkan/lession-1/assets/panda/box_stack.obj",mDevice);
 
 		mPipeline = Wrapper::Pipeline::create(mDevice,mRenderPass);
 		createPipeline();
@@ -236,8 +252,12 @@ namespace FF {
 	void Application::mainLoop() {
 		while (!mWindow->shouldClose()) {
 			mWindow->pollEvents();
+			mWindow->processEvent();
 
-			mModel->update();
+			//mModel->update();
+			mCamera.update();
+			mVPMatrices.mViewMatrix = mCamera.getViewMatrix();
+			mVPMatrices.mProjectionMatrix = mCamera.getProjectMatrix();
 
 			mUniformManager->update(mVPMatrices,mModel->getUniform(),mCurrentFrame);
 

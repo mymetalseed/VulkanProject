@@ -2,7 +2,12 @@
 
 #include "../base.h"
 
+namespace FF {
+	class Application;
+}
+
 namespace FF::Wrapper {
+
 	class Window {
 	public:
 		using Ptr = std::shared_ptr<Window>;
@@ -14,11 +19,21 @@ namespace FF::Wrapper {
 		void pollEvents();
 		
 		[[nodiscard]] auto getWindow()const { return mWindow; }
+
+		void setApp(std::shared_ptr<Application> app) {
+			mApp = app;
+		}
+
+		void processEvent();
+
 	public:
 		bool mWindowResized{ false };
+
+		std::weak_ptr<Application> mApp;
 	private:
 		int mWidth{0};
 		int mHeight{0};
 		GLFWwindow* mWindow{ NULL };
+
 	};
 }

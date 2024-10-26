@@ -5,11 +5,6 @@
 #include "vulkanWrapper/device.h"
 
 namespace FF {
-	struct Vertex {
-		glm::vec3 mPosition;
-		glm::vec3 mColor;
-	};
-
 	class Model {
 	public:
 		using Ptr = std::shared_ptr<Model>;
@@ -25,70 +20,24 @@ namespace FF {
 			};
 			*/
 
-			mPositions = {
-				0.0f,0.5f,0.0f,
-				0.5f,0.0f,0.0f,
-				-0.5f,0.0f,0.0f,
-				0.0f,-0.5f,0.0f,
 
-				0.3f,0.5f,0.2f,
-				1.8f,0.0f,0.2f,
-				-0.8f,0.0f,0.2f,
-				0.3f,-0.5f,0.2f,
-			};
 
-			mColors = {
-				1.0f,0.0f,0.0f,
-				0.0f,1.0f,0.0f,
-				0.0f,0.0f,1.0f,
-				1.0f,0.0f,0.0f,
-
-				1.0f,0.0f,0.0f,
-				0.0f,1.0f,0.0f,
-				0.0f,0.0f,1.0f,
-				1.0f,0.0f,0.0f,
-			};
-
-			mUVs = {
-				0.0f,1.0f,
-				0.0f,0.0f,
-				1.0f,1.0f,
-				1.0f,0.0f,
-
-				0.0f,1.0f,
-				0.0f,0.0f,
-				1.0f,1.0f,
-				1.0f,0.0f,
-			};
-
-			mIndexDatas = {
-				0,2,1,1,2,3,
-				4,6,5,5,6,7
-			};
-
-			mPositionBuffer = Wrapper::Buffer::createVertexBuffer(device, mPositions.size() * sizeof(float), mPositions.data());
-			mColorBuffer = Wrapper::Buffer::createVertexBuffer(device, mColors.size() * sizeof(float), mColors.data());
-			//mVertexBuffer = Wrapper::Buffer::createVertexBuffer(device,mDatas.size()*sizeof(Vertex),mDatas.data());
-			mIndexBuffer = Wrapper::Buffer::createIndexBuffer(device, mIndexDatas.size() * sizeof(unsigned int), mIndexDatas.data());
-			mUVBuffer = Wrapper::Buffer::createVertexBuffer(device, mUVs.size() * sizeof(float), mUVs.data());
 		}
 
 		~Model() {}
 
+		void loadModel(const std::string& path, const Wrapper::Device::Ptr& device);
+
 		std::vector<VkVertexInputBindingDescription> getVertexInputBindingDescription() {
 			std::vector<VkVertexInputBindingDescription> bindingDes{};
-			bindingDes.resize(3);
+			bindingDes.resize(2);
 			bindingDes[0].binding = 0;
 			bindingDes[0].stride = sizeof(float) * 3;
 			bindingDes[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
 			bindingDes[1].binding = 1;
-			bindingDes[1].stride = sizeof(float) * 3;
+			bindingDes[1].stride = sizeof(float) * 2;
 			bindingDes[1].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-			bindingDes[2].binding = 2;
-			bindingDes[2].stride = sizeof(float) * 2;
-			bindingDes[2].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 			 
 			return bindingDes;
 		}
@@ -96,7 +45,7 @@ namespace FF {
 		//Attribute相关信息，与VertexShader里面的location相关
 		std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions() {
 			std::vector<VkVertexInputAttributeDescription> attributeDes{};
-			attributeDes.resize(3);
+			attributeDes.resize(2);
 
 			attributeDes[0].binding = 0;
 			attributeDes[0].location = 0;
@@ -106,14 +55,8 @@ namespace FF {
 
 			attributeDes[1].binding = 1;
 			attributeDes[1].location = 1;
-			attributeDes[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-			//attributeDes[1].offset = offsetof(Vertex, mColor);
+			attributeDes[1].format = VK_FORMAT_R32G32_SFLOAT;
 			attributeDes[1].offset = 0;
-
-			attributeDes[2].binding = 2;
-			attributeDes[2].location = 2;
-			attributeDes[2].format = VK_FORMAT_R32G32_SFLOAT;
-			attributeDes[2].offset = 0;
 
 			return attributeDes;
 		}
@@ -121,7 +64,6 @@ namespace FF {
 		[[nodiscard]] auto getVertexBuffers() const { 
 			std::vector<VkBuffer> buffers{
 				mPositionBuffer->getBuffer(),
-				mColorBuffer->getBuffer(),
 				mUVBuffer->getBuffer()
 			};
 			return buffers;
@@ -144,13 +86,11 @@ namespace FF {
 
 	private:
 		std::vector<float> mPositions{};
-		std::vector<float> mColors{};
 		std::vector<unsigned int> mIndexDatas{};
 		std::vector<float> mUVs{};
 
 		Wrapper::Buffer::Ptr mPositionBuffer{ nullptr };
 		//Wrapper::Buffer::Ptr mVertexBuffer{ nullptr };
-		Wrapper::Buffer::Ptr mColorBuffer{ nullptr };
 		Wrapper::Buffer::Ptr mIndexBuffer{ nullptr };
 		Wrapper::Buffer::Ptr mUVBuffer{ nullptr };
 
